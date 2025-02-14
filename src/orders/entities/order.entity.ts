@@ -1,4 +1,4 @@
-export class Order {
+export class IdosellOrder {
   errors: any[];
   orderId: string;
   orderSerialNumber: number;
@@ -102,7 +102,7 @@ export interface OrderDetails {
   productRemovedInStock: string;
   orderSourceResults: OrderSourceResults;
   auctionInfo: any;
-  productsResults: any[];
+  productsResults: Product[];
   dropshippingOrderStatus: string;
 }
 
@@ -164,3 +164,30 @@ export interface ClientResult {
   clientDeliveryAddress: ClientDeliveryAddress;
   clientAccount: ClientAccount;
 }
+
+export interface Product {
+    productOrderPriceBaseCurrency: number;
+    productOrderPriceNetBaseCurrency: number;
+    productOrderAdditional: string;
+    basketPosition: number;
+    productPriceLog: string;
+    productId: number;
+    productName: string;
+    productCode: string;
+    sizeId: string;
+    sizePanelName: string;
+    productSizeCodeExternal: string;
+    stockId: number;
+    productQuantity: number;
+    productWeight: number;
+    productVat: number;
+    productPanelPrice: number;
+    productPanelPriceNet: number;
+    remarksToProduct: string;
+    productSerialNumbers: any;
+    bundleId: number;
+    productOrderPrice: number;
+    productOrderPriceNet: number;
+    orderSalesMode: string;
+    versionName?: string; // Optional property
+  }

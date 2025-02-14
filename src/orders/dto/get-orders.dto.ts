@@ -1,9 +1,12 @@
-import { Order } from "../entities/order.entity";
+export type GetOrderResponse = Order[];
 
-export interface FindAllResponse {
-    Results: Order[];
-    resultsNumberAll: number;
-    resultsNumberPage: number;
-    resultsLimit: number;
-    resultsPage: number;
-  }
+export type Order = {
+  orderID: string;
+  products: ResponseProductDto[];
+  orderWorth: number;
+}
+
+export interface ResponseProductDto {
+  productID: number;
+  quantity: number;
+}
