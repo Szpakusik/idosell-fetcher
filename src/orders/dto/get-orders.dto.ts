@@ -1,12 +1,8 @@
-export type GetOrderResponse = Order[];
+import { Order } from "../entities/order.entity";
 
-export type Order = {
-  orderID: string;
-  products: ResponseProductDto[];
-  orderWorth: number;
-}
+export type GetOrderResponseDto = {
+  data: Order[];
+  total: number;
+};
 
-export interface ResponseProductDto {
-  productID: number;
-  quantity: number;
-}
+

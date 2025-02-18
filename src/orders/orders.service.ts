@@ -8,15 +8,13 @@ import { lastValueFrom } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import {
   IdoSellResponseDto,
-  UpdateOrderResponseDto,
-} from './dto/update-orders.dto';
-import { IdosellOrder } from './entities/order.entity';
+} from './dto/get-idosell-orders.dto';
+import { IdosellOrder } from './entities/idosellOrder.entity';
 import {
-  GetOrderResponse,
-  Order,
-  ResponseProductDto,
+  GetOrderResponseDto,
 } from './dto/get-orders.dto';
 import { ORDERS_CACHE_KEY } from 'src/consts/cache';
+import { Order, Product } from './entities/order.entity';
 
 @Injectable()
 export class OrdersService {
@@ -36,7 +34,7 @@ export class OrdersService {
   async get(
     minWorth?: number,
     maxWorth?: number,
-  ): Promise<GetOrderResponse | null> {
+  ): Promise<GetOrderResponseDto | null> {
     let result: Order[] = [];
 
     const cachedOrders = await this.cacheManager.get<Order[]>(ORDERS_CACHE_KEY);
@@ -89,7 +87,7 @@ export class OrdersService {
     let allOrders: IdosellOrder[] = [];
     let currentPage = 0;
     let totalPages = 1;
-    let firstResponse: UpdateOrderResponseDto = {};
+    let firstResponse: Partial<IdoSellResponseDto> = {};
 
     while (currentPage < totalPages) {
       const result = await lastValueFrom(
@@ -138,7 +136,7 @@ const mapOrders = (allOrders: IdosellOrder[]): Order[] =>
       orderID: order.orderId,
       orderWorth: orderWorth,
       products: order.orderDetails.productsResults.map(
-        (product): ResponseProductDto => {
+        (product): Product => {
           return {
             productID: product.productId,
             quantity: product.productQuantity,
