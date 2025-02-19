@@ -7,8 +7,8 @@ export class OrdersController {
 
   @Get()
   get(
-    @Query('minWorth') minWorth: number,
-    @Query('maxWorth') maxWorth: number,
+    @Query('minWorth') minWorth?: number,
+    @Query('maxWorth') maxWorth?: number,
   ) {
     return this.ordersService.get(minWorth, maxWorth);
   }

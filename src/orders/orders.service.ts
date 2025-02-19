@@ -13,7 +13,7 @@ import { IdosellOrder } from './entities/idosellOrder.entity';
 import {
   GetOrderResponseDto,
 } from './dto/get-orders.dto';
-import { ORDERS_CACHE_KEY } from 'src/consts/cache';
+import { ORDERS_CACHE_KEY } from '../consts/cache';
 import { Order, Product } from './entities/order.entity';
 
 @Injectable()
