@@ -56,15 +56,15 @@ describe('OrdersService', () => {
     const cachedOrders: Order[] = [
       { orderWorth: 100, orderID: '1', products: [] },
     ];
-    const cacheSpy = jest
+    const cacheGetSpy = jest
       .spyOn(cacheManager, 'get')
       .mockResolvedValue(cachedOrders);
 
     const result = await service.get();
 
-    expect(cacheSpy).toHaveBeenCalledTimes(1);
+    expect(cacheGetSpy).toHaveBeenCalledTimes(1);
 
-    expect(result?.data).toEqual(cachedOrders);
+    expect(result).toEqual(cachedOrders);
   });
 
   it('should filter orders by minWorth', async () => {
@@ -79,9 +79,7 @@ describe('OrdersService', () => {
 
     expect(cacheSpy).toHaveBeenCalledTimes(1);
     expect(httpSpy).toHaveBeenCalledTimes(0);
-    expect(result?.data).toEqual([
-      { orderWorth: 150, orderID: '2', products: [] },
-    ]);
+    expect(result).toEqual([{ orderWorth: 150, orderID: '2', products: [] }]);
   });
 
   it('should filter orders by maxWorth', async () => {
@@ -92,9 +90,7 @@ describe('OrdersService', () => {
     jest.spyOn(cacheManager, 'get').mockResolvedValue(orders);
 
     const result = await service.get(undefined, 100);
-    expect(result?.data).toEqual([
-      { orderWorth: 50, orderID: '1', products: [] },
-    ]);
+    expect(result).toEqual([{ orderWorth: 50, orderID: '1', products: [] }]);
   });
 
   it('should filter orders by minWorth and maxWorth', async () => {
@@ -106,28 +102,27 @@ describe('OrdersService', () => {
     jest.spyOn(cacheManager, 'get').mockResolvedValue(orders);
 
     const result = await service.get(100, 200);
-    expect(result?.data).toEqual([
-      { orderWorth: 150, orderID: '2', products: [] },
-    ]);
+    expect(result).toEqual([{ orderWorth: 150, orderID: '2', products: [] }]);
   });
 
-  it('should call API when cache is empty', async () => {
+  it('should call getIdosellOrders when cache is empty', async () => {
     jest.spyOn(cacheManager, 'get').mockResolvedValue(null);
-    const httpSpy = jest.spyOn(httpService, 'post');
-    jest.spyOn(service, 'getIdosellOrders').mockResolvedValue({
-      Results: [],
-      resultsNumberAll: 0,
-      resultsNumberPage: 0,
-      resultsLimit: 0,
-      resultsPage: 0,
-    });
+    const idosellSpy = jest
+      .spyOn(service, 'getIdosellOrders')
+      .mockResolvedValue({
+        Results: [],
+        resultsNumberAll: 0,
+        resultsNumberPage: 0,
+        resultsLimit: 0,
+        resultsPage: 0,
+      });
 
     await service.get();
 
-    expect(httpSpy).toHaveBeenCalledTimes(0);
+    expect(idosellSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('should update cahce when cache is empty', async () => {
+  it('should update cache when cache is empty', async () => {
     jest.spyOn(cacheManager, 'get').mockResolvedValue(null);
     jest.spyOn(service, 'getIdosellOrders').mockResolvedValue({
       Results: [],

@@ -60,10 +60,7 @@ export class OrdersService {
       });
     }
 
-    return {
-      data: result,
-      total: result.length,
-    };
+    return result;
   }
 
   async updateMappedOrdersCache(): Promise<Order[]> {
