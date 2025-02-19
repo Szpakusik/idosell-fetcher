@@ -30,6 +30,7 @@ describe('OrdersController', () => {
           provide: OrdersService,
           useValue: {
             get: jest.fn().mockResolvedValue(mockedValue),
+            getSingle: jest.fn(),
           },
         },
       ],
@@ -40,7 +41,13 @@ describe('OrdersController', () => {
     res = {
       header: jest.fn(),
       attachment: jest.fn(),
+      status: jest.fn(() => {
+        return {
+          send: jest.fn(),
+        };
+      }),
       send: jest.fn(),
+      json: jest.fn(),
     } as unknown as Response;
     resultCSV = json2csv(mockedValue, {
       expandArrayObjects: true,
@@ -51,35 +58,64 @@ describe('OrdersController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should return orders with no filters', async () => {
-    await controller.get(res)
+  describe('get Method', () => {
+    it('should return orders with no filters', async () => {
+      await controller.get(res);
 
-    expect(service.get).toHaveBeenCalledWith(undefined, undefined);
+      expect(service.get).toHaveBeenCalledWith(undefined, undefined);
+    });
+
+    it('should return orders with minWorth filter', async () => {
+      await controller.get(res, 100);
+
+      expect(service.get).toHaveBeenCalledWith(100, undefined);
+    });
+
+    it('should return orders with maxWorth filter', async () => {
+      await controller.get(res, undefined, 200);
+
+      expect(service.get).toHaveBeenCalledWith(undefined, 200);
+    });
+
+    it('should return orders with both minWorth and maxWorth filters', async () => {
+      await controller.get(res, 50, 200);
+
+      expect(service.get).toHaveBeenCalledWith(50, 200);
+    });
+
+    it('should return orders as CSV', async () => {
+      await controller.get(res, 50, 200);
+
+      expect(res.header).toHaveBeenCalledWith('Content-Type', 'text/csv');
+      expect(res.attachment).toHaveBeenCalledWith('orders.csv');
+      expect(res.send).toHaveBeenCalledWith(resultCSV);
+    });
   });
+  describe('getSingle Method', () => {
+    it('should return a single order by ID', async () => {
+      const order = {
+        orderID: 'someId',
+        orderWorth: 100,
+        products: [
+          { productID: 999, quantity: 2 },
+          { productID: 999, quantity: 2 },
+        ],
+      };
+      jest.spyOn(service, 'getSingle').mockResolvedValue(order);
 
-  it('should return orders with minWorth filter', async () => {
-    await controller.get(res, 100)
+      await controller.getSingle(res, 'someId');
 
-    expect(service.get).toHaveBeenCalledWith(100, undefined);
-  });
+      expect(service.getSingle).toHaveBeenCalledWith('someId');
+      expect(res.json).toHaveBeenCalledWith(order);
+    });
 
-  it('should return orders with maxWorth filter', async () => {
-    await controller.get(res, undefined, 200)
+    it('should return 404 if order is not found', async () => {
+      jest.spyOn(service, 'getSingle').mockResolvedValue(null);
 
-    expect(service.get).toHaveBeenCalledWith(undefined, 200);
-  });
+      await controller.getSingle(res, 'invalidId');
 
-  it('should return orders with both minWorth and maxWorth filters', async () => {
-    await controller.get(res, 50, 200)
-
-    expect(service.get).toHaveBeenCalledWith(50, 200);
-  });
-
-  it('should return orders as CSV', async () => {
-    await controller.get(res, 50, 200);
-
-    expect(res.header).toHaveBeenCalledWith('Content-Type', 'text/csv');
-    expect(res.attachment).toHaveBeenCalledWith('orders.csv');
-    expect(res.send).toHaveBeenCalledWith(resultCSV);
+      expect(service.getSingle).toHaveBeenCalledWith('invalidId');
+      expect(res.status).toHaveBeenCalledWith(404);
+    });
   });
 });

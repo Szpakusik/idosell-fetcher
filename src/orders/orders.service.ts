@@ -6,13 +6,9 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { lastValueFrom } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import {
-  IdoSellResponseDto,
-} from './dto/get-idosell-orders.dto';
+import { IdoSellResponseDto } from './dto/get-idosell-orders.dto';
 import { IdosellOrder } from './entities/idosellOrder.entity';
-import {
-  GetOrderResponseDto,
-} from './dto/get-orders.dto';
+import { GetOrderResponseDto } from './dto/get-orders.dto';
 import { ORDERS_CACHE_KEY } from '../consts/cache';
 import { Order, Product } from './entities/order.entity';
 
@@ -61,6 +57,20 @@ export class OrdersService {
     }
 
     return result;
+  }
+
+  async getSingle(id: string): Promise<Order | null> {
+    let orders: Order[] = [];
+
+    const cachedOrders = await this.cacheManager.get<Order[]>(ORDERS_CACHE_KEY);
+
+    if (cachedOrders) {
+      orders = cachedOrders;
+    } else {
+      orders = await this.updateMappedOrdersCache();
+    }
+
+    return orders.find((order) => order.orderID === id) ?? null;
   }
 
   async updateMappedOrdersCache(): Promise<Order[]> {
@@ -132,13 +142,11 @@ const mapOrders = (allOrders: IdosellOrder[]): Order[] =>
     return {
       orderID: order.orderId,
       orderWorth: orderWorth,
-      products: order.orderDetails.productsResults.map(
-        (product): Product => {
-          return {
-            productID: product.productId,
-            quantity: product.productQuantity,
-          };
-        },
-      ),
+      products: order.orderDetails.productsResults.map((product): Product => {
+        return {
+          productID: product.productId,
+          quantity: product.productQuantity,
+        };
+      }),
     };
   });
